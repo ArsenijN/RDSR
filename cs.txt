@@ -1,0 +1,263 @@
+//Please make next: for "reset" state (to set "fboot=1"), boot arduino with pressed encoder button, then erase EEPROM and set value, but make main code not work before it restarted from "reset" state. Also, display on screen something like "First boot was initiated.\nRestart the Arduino to continue"
+//Please, connect encoder somewhere
+//Encoder type: 5-pin, pulse
+//Screen occupy the A4 and A5 pins
+//Pins can be changed to other if needed for proper code
+//You can optimize next code to make less used space on Arduino Nano V3 (if required)
+//Highlight = select
+//If something selected, it's show that something can be done with this
+
+//What I noticed that start lines was exactly same:
+u8g2.clearBuffer();
+u8g2.setFontMode(1);
+u8g2.setBitmapMode(1);
+//Sometimes bitmaps are added
+//On the end - 
+u8g2.sendBuffer();
+//So, use when needed
+
+
+//First screen (if EEPROM have "fboot=1"):
+u8g2.drawFrame(0, 0, 128, 64);
+u8g2.drawLine(0, 8, 126, 8);
+u8g2.setFont(u8g2_font_4x6_tr);
+u8g2.drawStr(48, 7, "WELCOME!");
+u8g2.drawStr(12, 15, "Since this is a first boot");
+u8g2.drawStr(20, 21, "let's do the settings!");
+u8g2.drawStr(20, 33, "(Press on the encoder)");
+u8g2.drawStr(56, 61, "[OK]");
+//Pressing encoder button will set "fboot=0" and go next (second) screen
+
+//Highlight "OK" if: any encoder rotation:
+u8g2.setDrawColor(2);
+u8g2.drawBox(56, 55, 15, 7);
+//Pressing encoder button before or now will set "fboot=0"
+//and proceed to the second (settings) screen
+
+
+//First (normal boot) screen (if EEPROM have "fboot=0"):
+//display it for 0.25 seconds
+u8g2.drawBox(0, 0, 128, 64);
+
+
+//Second screen after normal boot screen (if EEPROM have "fboot=0"):
+//display it for 2 seconds
+static const unsigned char image_music_radio_bits[] = {0x00,0x18,0x00,0x06,0x80,0x01,0x60,0x00,0x18,0x00,0x06,0x00,0xfe,0x7f,0x39,0x80,0x55,0xbe,0x83,0xa2,0xd7,0xbe,0x83,0x80,0x55,0xaa,0x39,0x80,0xfe,0x7f};
+u8g2.setFont(u8g2_font_4x6_tr);
+u8g2.drawStr(8, 13, "RDSR portable");
+u8g2.drawStr(8, 19, "(Radio Data System-enabled");
+u8g2.drawStr(8, 25, "Radio)");
+u8g2.drawStr(76, 56, "@arsenius.gen");
+u8g2.drawStr(36, 63, "arsenijn.github.io/RDSR");
+u8g2.drawXBM(56, 25, 16, 15, image_music_radio_bits);
+
+
+//Second screen after first boot screen
+//Also, this is a settings screen
+//To be fair, "Settings" Main screen
+u8g2.drawFrame(0, 0, 128, 64);
+u8g2.drawLine(0, 8, 127, 8);
+u8g2.drawLine(8, 0, 8, 63);
+u8g2.drawLine(2, 4, 4, 2);
+u8g2.drawLine(2, 4, 6, 4);
+u8g2.drawLine(2, 4, 4, 6);
+u8g2.drawLine(0, 16, 7, 16);
+u8g2.drawLine(0, 24, 8, 24);
+u8g2.drawLine(0, 32, 8, 32);
+u8g2.drawLine(0, 40, 7, 40);
+u8g2.drawLine(0, 48, 7, 48);
+u8g2.drawLine(0, 56, 8, 56);
+u8g2.setDrawColor(2);
+u8g2.drawLine(9, 63, 42, 63);
+u8g2.setDrawColor(1);
+u8g2.setFont(u8g2_font_4x6_tr);
+u8g2.drawStr(10, 7, "Settings");
+u8g2.drawStr(10, 15, "SD Card");
+u8g2.drawStr(10, 23, "Power features");
+u8g2.drawStr(10, 31, "Bluetooth");
+u8g2.drawStr(10, 39, "Calibrations");
+u8g2.drawStr(10, 47, "Factory reset");
+u8g2.drawStr(10, 55, "Language");
+u8g2.drawStr(10, 63, "Turn off");
+u8g2.drawBox(2, 18, 5, 5);
+u8g2.drawLine(9, 16, 126, 16);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 9, 118, 7);
+
+//Next code - highlighting (selecting)
+//For start (no encoder rotations) - nothing was selected except exit
+//The code are placed in order
+//If someting new selected, remove past selection not by full screen refresh, but by redrawing past piece (if it faster, if not - do what you think will be faster)
+//Highlighting 2 or more objects at once - disallowed (only 1 selection per... encoder rotation)
+
+//Highlight Exit:
+u8g2.setDrawColor(2);
+u8g2.drawBox(1, 1, 7, 7);
+
+//Highlight SD card:
+u8g2.drawBox(2, 18, 5, 5);
+u8g2.drawLine(9, 16, 126, 16);
+u8g2.drawBox(2, 10, 5, 5);
+u8g2.drawLine(9, 16, 126, 16);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 9, 118, 7);
+
+//Highlight Power features:
+u8g2.drawBox(2, 18, 5, 5);
+u8g2.drawLine(9, 16, 126, 16);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 17, 118, 7);
+u8g2.setDrawColor(1);
+u8g2.drawLine(9, 24, 126, 24);
+
+//Highlight Bluetooth:
+u8g2.drawBox(2, 26, 5, 5);
+u8g2.drawLine(9, 32, 126, 32);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 25, 118, 7);
+u8g2.setDrawColor(1);
+u8g2.drawLine(9, 24, 126, 24);
+
+//Highlight Calibrations:
+u8g2.drawBox(2, 34, 5, 5);
+u8g2.drawLine(9, 32, 126, 32);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 33, 118, 7);
+u8g2.setDrawColor(1);
+u8g2.drawLine(9, 40, 126, 40);
+
+//Highlight Factory reset:
+u8g2.drawBox(2, 42, 5, 5);
+u8g2.drawLine(9, 48, 126, 48);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 41, 118, 7);
+u8g2.setDrawColor(1);
+u8g2.drawLine(9, 40, 126, 40);
+
+//Highlight Language:
+u8g2.drawBox(2, 50, 5, 5);
+u8g2.drawLine(9, 48, 126, 48);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 49, 118, 7);
+u8g2.setDrawColor(1);
+u8g2.drawLine(9, 56, 126, 56);
+
+//Highlight Turn off:
+u8g2.drawBox(2, 58, 5, 5);
+u8g2.drawLine(9, 48, 126, 48);
+u8g2.setDrawColor(2);
+u8g2.drawBox(9, 57, 118, 7);
+u8g2.setDrawColor(1);
+u8g2.drawLine(9, 56, 126, 56);
+u8g2.setDrawColor(2);
+u8g2.drawLine(1, 63, 7, 63);
+u8g2.setDrawColor(1);
+u8g2.drawLine(42, 63, 126, 63);
+
+
+//For highlighted SD card: if pressed: encoder button:
+//The "Settings/SD card" screen
+u8g2.drawFrame(0, 0, 128, 64);
+u8g2.drawLine(0, 8, 127, 8);
+u8g2.drawLine(8, 0, 8, 63);
+u8g2.drawLine(2, 4, 4, 2);
+u8g2.drawLine(2, 4, 6, 4);
+u8g2.drawLine(2, 4, 4, 6);
+u8g2.drawLine(0, 16, 7, 16);
+u8g2.drawLine(0, 24, 8, 24);
+u8g2.drawLine(0, 32, 8, 32);
+u8g2.drawLine(0, 40, 7, 40);
+u8g2.drawLine(0, 48, 7, 48);
+u8g2.drawLine(0, 56, 8, 56);
+u8g2.drawLine(9, 63, 42, 63);
+u8g2.setDrawColor(2);
+u8g2.drawLine(9, 63, 30, 63);
+u8g2.setDrawColor(1);
+u8g2.setFont(u8g2_font_4x6_tr);
+u8g2.drawStr(10, 7, "Settings/SD Card");
+u8g2.drawStr(10, 15, "Activity:");
+u8g2.drawStr(10, 23, "DB features");
+u8g2.drawStr(10, 31, "Explore");
+u8g2.drawStr(10, 39, "Logging");
+u8g2.drawStr(10, 47, "Backup and restore");
+u8g2.drawStr(10, 63, "Eject");
+u8g2.drawStr(10, 55, "Format media");
+u8g2.drawStr(91, 15, "Connected");
+//For now, working code that actually checks if SD card connected and can display other info about, aren't necessary
+
+//If: highlighted exit and pressed: encoder button:
+//return to the "Main" screen
+//This screen will appear always after all boot steps (screens)
+static const unsigned char image_Battery_bits[] = {0x3f,0x41,0x3f};
+static const unsigned char image_Charging_bits[] = {0x08,0x04,0x02,0x0f,0x04,0x02,0x01};
+// Radio frequency
+u8g2.setFont(u8g2_font_profont22_tr);
+u8g2.drawStr(0, 64, "109.9");
+// RDS Station name
+u8g2.setFont(u8g2_font_4x6_tr);
+u8g2.drawStr(60, 63, "Zakarpattya FM");
+// DB song current - full time
+u8g2.setFont(u8g2_font_profont10_tr);
+u8g2.drawStr(60, 56, "0:53 - 2:06");
+// Current time
+u8g2.setFont(u8g2_font_4x6_tr);
+u8g2.drawStr(0, 5, "16:05:15");
+// Current date
+u8g2.drawStr(44, 5, "06.06.2025");
+// RDS 1
+u8g2.drawStr(0, 13, "KOLA - Salut Papa");
+// RDS 2
+u8g2.drawStr(0, 19, "REKLAMA - 050 432");
+// RDS 3
+u8g2.drawStr(0, 25, "85 - 15");
+// RDS 4
+u8g2.drawStr(0, 31, "RADIO ZAKARPATTYA");
+// RDS 5
+u8g2.drawStr(0, 37, "RDSRRDSRRDSRRDSRRDSRRDSR");
+// RDS 6
+u8g2.drawStr(0, 43, "RDSRRDSRRDSRRDSRRDSRRDSR");
+// RDS 7
+u8g2.drawStr(0, 49, "RDSRRDSRRDSRRDSRRDSRRDSR");
+// Battery
+u8g2.drawXBM(121, 2, 7, 3, image_Battery_bits);
+// Charging
+u8g2.drawXBM(102, 0, 4, 7, image_Charging_bits);
+// 20%
+u8g2.drawLine(122, 3, 122, 3);
+// 40%
+u8g2.drawLine(123, 3, 123, 3);
+// 60%
+u8g2.drawLine(124, 3, 124, 3);
+// 80%
+u8g2.drawLine(125, 3, 125, 3);
+// 100%
+u8g2.drawLine(126, 3, 126, 3);
+// Battery percentage (currently)
+u8g2.drawStr(109, 6, "99");
+// Battery percentage sign
+u8g2.drawStr(117, 6, "%");
+// Recording sign
+u8g2.drawFilledEllipse(111, 9, 2, 2);
+// Recording sign
+u8g2.drawStr(116, 12, "REC");
+// Recording time (currently)
+u8g2.drawStr(96, 18, "99:99:99");
+// Error sign
+u8g2.drawStr(96, 24, "ERR!");
+// Error message (put here)
+u8g2.drawStr(96, 30, "Err msg");
+// Memory slot
+u8g2.drawStr(100, 38, "MEM 999");
+// RDS state
+u8g2.drawStr(117, 46, "RDS");
+// DB state
+u8g2.drawStr(121, 52, "DB");
+// Bluetooth state
+u8g2.drawStr(121, 58, "BT");
+// SD Card state
+u8g2.drawStr(121, 64, "SD");
+
+//That's all I wanted
+//Maybe I'll add something, based on this code
+//Also, I want to use in future a dynamic screens that loaded from SD card and used "on-fly"
+//But Arduino Nano V3 have very small amount of flash and ram... Near impossible to do this
