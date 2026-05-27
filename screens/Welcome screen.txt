@@ -1,0 +1,39 @@
+
+// [BEGIN lopaka generated]
+
+
+
+void drawScreen_3(void) {
+    u8g2.setFontMode(1);
+    u8g2.setBitmapMode(1);
+    // Layer 1
+    u8g2.drawFrame(0, 0, 128, 64);
+    // Layer 2
+    u8g2.drawLine(0, 8, 126, 8);
+    // Layer 3
+    u8g2.setFont(u8g2_font_4x6_tr);
+    u8g2.drawStr(48, 7, "WELCOME!");
+    // Layer 4
+    u8g2.drawStr(12, 15, "Since this is a first boot");
+    // Layer 5
+    u8g2.drawStr(20, 21, "let's do the settings!");
+    // Layer 6
+    u8g2.drawStr(20, 33, "(Press on the encoder)");
+    // Layer 7
+    u8g2.drawStr(56, 61, "[OK]");
+    // Highlight the OK
+    u8g2.setDrawColor(2);
+    u8g2.drawBox(56, 55, 15, 7);
+}
+
+void loop(){
+    u8g2.firstPage();
+    do {
+        drawScreen_3();
+    } while (u8g2.nextPage());
+};
+
+void setup() {
+    u8g2.begin();
+}
+// [END lopaka generated]
